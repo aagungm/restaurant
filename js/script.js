@@ -1,51 +1,192 @@
 var map;
+var mymarker;
+var geocoder;
+var placesServ;
+var center;
+var placeholder = document.getElementById("userLocation");
+var markers = [];
+var dragListener;
 
-//location of all restaurants (latitude and longitude)
-var locations = [
-				[-27.4694421, 153.0032058,'Arrivederci Pizza Al Metro','img/marker/red_MarkerA.png'],
-				[-27.4786706,153.0140952,'Ouzeri','img/marker/red_MarkerB.png'],
-				[-27.4792893,153.0136446,'Little Greek Taverna','img/marker/red_MarkerC.png']
-				]
 
-										
-function initialize() {
-	var marker;
-	var i;
+function init() {
+  
+  var mapOpts = {
+    center: {lat: -27.4980876, lng: 152.9933706},
+    zoom: 15
+  }
+  map = new google.maps.Map(document.getElementById("rest-maps"), mapOpts);
+  map.setTilt(45);
 
-    //map variable
-    var mapOptions = {
-    center: { lat: -27.4718335, lng: 153.0129446},
-    zoom: 14
-    };
 
-    //represent map is the google map class
-    var map = new google.maps.Map(document.getElementById('rest-maps'),
-    mapOptions);
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(swooty);
+  } else {
+    placeholder.innerHTML = "Geolocation service is not supported by your browser."
+  }
 
-    //info window
-    var infowindow = new google.maps.InfoWindow();
+ 
+  dragListener = google.maps.event.addListener(map, 'dragend', function() {
 
-    //markers
-    for (i=0; i < locations.length;i++){
-    	marker = new google.maps.Marker({
-    		position: new google.maps.LatLng(locations[i][0], locations[i][1]),
-    		map: map,
-    		title: locations[i][2],
-            icon: locations[i][3]
-    		
-    	});
-
-        //info window
-    	google.maps.event.addListener(marker, 'click', (function(marker, i) {
-            return function() {
-              infowindow.setContent(locations[i][2]);
-              infowindow.open(map, marker);
-            }
-          })(marker, i));
-    }
-
+    window.setTimeout(function() {
+      var getCenter = map.getCenter();
+      getPlaces(getCenter);
+    }, 2000);
+  });
 }
 
+function searchPlaces(query) {
+  var temp = map.getCenter();
+  var coords = temp.lat() + "," + temp.lng();
+  var muppet = new XMLHttpRequest();
+  muppet.onreadystatechange = function() {
+    if (muppet.readyState == 4 && muppet.status == 200) {
+      var result = JSON.parse(muppet.responseText);
+      var bleh;
+      for (var i=0; i<result.length; i++) {
+      
+        var marker = new google.maps.Marker({
+          position: {lat: parseFloat(result[i].location["lat"]), lng: parseFloat(result[i].location["lng"])},
+          map: map,
+          title: result[i].name,
+           icon: 'img/marker/red_Marker'+i+'.png'
+        });
+    
+        if (i==0 && markers.length > 0) {
+          for (var j=0; j<markers.length; j++) {
+            markers[j].setMap(null);
+          }
+          markers = [];
+          $('restaurantsTable').html('');
+        }
+        markers.push(marker);
+       
 
 
-google.maps.event.addDomListener(window, 'load', initialize);
+        if(bleh == null){
+        bleh ="<div class='row restaurant'>" 
+        + "<div class='col-md-2 col-xs-2 marker'>" + "<img class='img-responsive' src='img/marker/red_Marker"+i+".png'>"
+        + "</div>" +"<div class='col-md-8 col-xs-8'>"+ "<p><b>"+result[i].name+"</b><br>"
+        + result[i].address + "<br>" 
+        + "<a href='moreInfo.php?ref="+result[i].id+"'>More Info</a>"
+        + "</div>"
+        + "</div>";
+      }else {
+        bleh = bleh + "<div class='row restaurant'>" 
+        + "<div class='col-md-2 col-xs-2 marker'>" + "<img class='img-responsive' src='img/marker/red_Marker"+i+".png'>"
+        + "</div>" +"<div class='col-md-8 col-xs-8'>"+ "<p><b>"+result[i].name+"</b><br>"
+        + result[i].address + "<br>" 
+        + "<a href='moreInfo.php?ref="+result[i].id+"'>More Info</a>"
+        + "</div>"
+        + "</div>";
+
+      }
+      
+      }
+      $('#restaurantsTable').html(bleh);
+    }
+  };
+  muppet.open("GET", "searchPlaces.php?coords="+coords+"&query="+query, true);
+  muppet.send();
+}
+
+function getPlaces(location) {
+  var coords = location.lat() + "," + location.lng();
+  var muppet = new XMLHttpRequest();
+  muppet.onreadystatechange = function() {
+    if (muppet.readyState == 4 && muppet.status == 200) {
+      var result = JSON.parse(muppet.responseText);
+      var bleh;
+      for (var i=0; i<result.length; i++) {
+    
+        var marker = new google.maps.Marker({
+          position: {lat: parseFloat(result[i].location["lat"]), lng: parseFloat(result[i].location["lng"])},
+          map: map,
+          title: result[i].name,
+          icon: 'img/marker/red_Marker'+i+'.png'
+        });
+    
+        if (i==0 && markers.length > 0) {
+          for (var j=0; j<markers.length; j++) {
+            markers[j].setMap(null);
+          }
+          markers = [];
+          $('restaurantsTable').html('');
+        }
+        markers.push(marker);
+      
+
+       if(bleh == null){
+        bleh ="<div class='row restaurant'>" 
+        + "<div class='col-md-2 col-xs-2 marker'>" + "<img class='img-responsive' src='img/marker/red_Marker"+i+".png'>"
+        + "</div>" +"<div class='col-md-8 col-xs-8'>"+ "<p><b>"+result[i].name+"</b><br>"
+        + result[i].address + "<br>" 
+        + "<a href='moreInfo.php?ref="+result[i].id+"'>More Info</a>"
+        + "</div>"
+        + "</div>";
+      }else {
+        bleh = bleh + "<div class='row restaurant'>" 
+        + "<div class='col-md-2 col-xs-2 marker'>" + "<img class='img-responsive' src='img/marker/red_Marker"+i+".png'>"
+        + "</div>" +"<div class='col-md-8 col-xs-8'>"+ "<p><b>"+result[i].name+"</b><br>"
+        + result[i].address + "<br>" 
+        + "<a href='moreInfo.php?ref="+result[i].id+"'>More Info</a>"
+        + "</div>"
+        + "</div>";
+
+      }
+        
+      }
+      $('#restaurantsTable').html(bleh);
+    }
+  };
+  muppet.open("GET", "getPlaces.php?coords="+coords, true);
+  muppet.send();
+}
+
+function swooty(pos) {
+  
+  center = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+  map.setCenter(center);
+
+  geocoder = new google.maps.Geocoder();
+  geocoder.geocode({'latLng': {lat: pos.coords.latitude, lng: pos.coords.longitude}}, function(results, status) {
+   
+      var result = results[0];
+     
+      var swiggity = result.address_components.length;
+      var street, suburb;
+         if (status == google.maps.GeocoderStatus.OK) {
+               mymarker = new google.maps.Marker({
+                        position: center,
+                        map: map,
+                        icon: 'img/marker/blue.png'
+                    });
+
+           
+           
+      for (var i=0; i<swiggity; i++) {
+        var temp = result.address_components[i];
+        if (temp.types.indexOf("route") >= 0) {
+          street = result.address_components[i].long_name;
+        }
+        if (temp.types.indexOf("locality") >= 0) {
+          suburb = result.address_components[i].short_name;
+        }
+      }
+
+      placeholder.innerHTML = "You are at " + suburb + ".";
+
+    } else {
+      placeholder.innerHTML = "Geolocation service failed to get your location information.";
+    }
+  });
+  getPlaces(center);
+}
+
+function loadMap() {
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "http://maps.googleapis.com/maps/api/js?callback=init";
+  document.body.appendChild(script);
+}
+
+window.onload = loadMap;

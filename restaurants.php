@@ -10,11 +10,12 @@
 <body>
 	<div class="navbar navbar-default navbar-fixed-top">
 		<div class="container">
-			<a href='index.html' class='navbar-brand'>My Restaurant </a> 
+			<a href='index.php' class='navbar-brand'>My Restaurant </a> 
 			<ul class="nav navbar-nav navbar-right">
-				<li><a href="index.html">Home</a></li>
+				<li><a href="index.php">Home</a></li>
 				<li><a href="#">About Us</a></li>
 				<li><a href="#">Contact Us</a></li>
+				<li><a href="login-page.php" id="login-button" class="btn btn-primary" role="button">Login</a></li>
 			</ul>
 
 		</div>
