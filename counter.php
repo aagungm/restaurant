@@ -69,7 +69,7 @@
 	<div class="container body-container">
 		<div class="row">
 		<?php
-			echo "<h3>Hello there! You are visitor number ".$count."</h3>";
+			echo "<h3>Visitor number ".$count."</h3>";
 			header("Refresh: 2; URL=$url");
 		?>
 		</div>
