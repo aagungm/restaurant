@@ -6,5 +6,5 @@
 	define('DBSERVER', "au-cdbr-azure-east-a.cloudapp.net");
 	define('DBUSER', "bccdef21785421");
 	define('DBPASS', "6271cb31");
-	define('DATABASE', "restaurant");
+	define('DATABASE', "infs3202agung");
 ?>
