@@ -18,7 +18,7 @@
 		$count = $row[1];
 		$count = intval($count) + 1;
 		//update counter value
-		$query = "UPDATE `counter` SET `counts`=$count WHERE `counter`='1'";
+		$query = "UPDATE `counter` SET `counts`=$count WHERE `id`='1'";
 		$result = mysqli_query($db, $query);
 	} else {
 		die ("Something wrong with the MySQL database");
